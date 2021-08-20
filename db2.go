@@ -40,7 +40,6 @@ type JobResponse struct {
 }
 
 type Job struct {
-    Stopped bool
     Client *http.Client
     PageRequest *http.Request
     StopRequest *http.Request
@@ -148,7 +147,7 @@ func Db2RunAsyncJob(authToken string, authSettings AuthSettings, service string,
     client := &http.Client{}
     client.Timeout = 40 * time.Second
 
-    job := Job{false, client, requestNext, requestStop}
+    job := Job{client, requestNext, requestStop}
     return job, nil
 }
 
@@ -156,12 +155,15 @@ func (job *Job) NextPage() (*QueryResponse, error) {
     responseNext, err := job.Client.Do(job.PageRequest)
     if err != nil { return nil, err }
     defer responseNext.Body.Close()
+
     responseNextBytes, err := ioutil.ReadAll(responseNext.Body)
     if err != nil { return nil, err }
+
     if responseNext.StatusCode != 200 { // no need for 202 since always accessing an existing job, never making a new one
         if responseNext.StatusCode == 404 { return nil, nil } // not found, no error code associated with 404 not found error
         return nil, errors.New(string(responseNextBytes))
     }
+
     response := QueryResponse{}
     json.Unmarshal(responseNextBytes, &response)
     return &response, nil
@@ -171,10 +173,13 @@ func (job *Job) Stop() error {
     responseStop, err := job.Client.Do(job.StopRequest)
     if err != nil { return err }
     defer responseStop.Body.Close()
+
     responseStopBytes, err := ioutil.ReadAll(responseStop.Body)
     if err != nil { return err }
+
     if responseStop.StatusCode != 204 { // stopped successfully
         return errors.New(string(responseStopBytes))
     }
+
     return nil
 }
