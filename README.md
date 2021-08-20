@@ -1,4 +1,4 @@
-# Kimota
+# Atomic
 
 Build:
 
