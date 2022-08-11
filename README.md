@@ -1,5 +1,7 @@
 # Atomic
 
+**USED AS DEMONSTRATION OF IBM Db2:** https://github.com/IBM-Db2-Developer/Atomic-Music-Discovery-With-Db2/tree/master/atomic-go
+
 Build:
 
 ```
